@@ -36,3 +36,31 @@
     (dolist (item (reverse items) result)
       (setf result (gov-cons item result)))))
 
+;; Testing
+(equal '(((nil . c) . b) . a) (gov-list 'a 'b 'c))
+
+;; For length, we just need to iterate using car instead of cdr
+(defun gov-length (list)
+  (if (null list)
+    0
+    (+ 1 (gov-length (car list)))))
+
+(= 3 (gov-length (gov-list 'a 'b 'c)))
+
+;; For member, we need to iterate using car instead of cdr and check if a
+;; passed value is in the list.  The request indicates that we don't need
+;; to implement keyword arguments, simplifying things quite a bit.
+(defun gov-member (value list)
+  (if (null list)
+    nil
+    (if (eql value (cdr list))
+      list
+      (gov-member value (car list)))))
+
+;; Testing
+(equal '((nil . c) . b) (gov-member 'b (gov-list 'a 'b 'c)))
+
+(equal '(((nil . c) . b) . a) (gov-member 'a (gov-list 'a 'b 'c)))
+
+(equal nil (gov-member 'd (gov-list 'a 'b 'c)))
+
