@@ -45,6 +45,12 @@
     0
     (+ 1 (gov-length (car list)))))
 
+(defun gov-length (list)
+  (ifa (null list)
+    0
+    (+ 1 (gov-length (car list)))))
+
+
 (= 3 (gov-length (gov-list 'a 'b 'c)))
 
 ;; For member, we need to iterate using car instead of cdr and check if a
