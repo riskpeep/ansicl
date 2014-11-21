@@ -41,11 +41,6 @@
 
 ;; For length, we just need to iterate using car instead of cdr
 (defun gov-length (list)
-  (if (null list)
-    0
-    (+ 1 (gov-length (car list)))))
-
-(defun gov-length (list)
   (ifa (null list)
     0
     (+ 1 (gov-length (car list)))))
