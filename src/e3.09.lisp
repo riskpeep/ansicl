@@ -48,49 +48,67 @@
 ;;
 ;; Given these observations, we can begin our solution.
 
-;; First we define a high level function to kick off the search.  Note that
-;; we refer to a modified bfs function 'bfse' to indicate that it is an
-;; exhaustive search
-(defun longest-path (start end net)
-   (bfse end (list (list start)) net))
-
-;; Next we write our modified bfse function
-(defun bfse (end queue net)
-  (let ((longest-path nil))
-    (if (null queue)
-      ;; We're at the end, return the best-path
-      longest-path
-
-      ;; Still more to search
-      (let ((path (car queue)))
-        (let ((node (car path)))
-          ;; Have we found a solution?
-          (if (eql node end)
-            ;; Yes, lets see if it is better than the current solution
-            (if (> (length path) (length longest-path))
-              ;; It is better, update the best-path and continue the search
-              (progn
-                (setf longest-path (reverse path))
-                (bfse end (cdr queue) net)))  ; We don't need to search on the 
-                                             ; current path anymore, so don't
-                                             ; worry about appending new paths
-                                             ; here
-            ;; No, continue the search
-            (bfse end
-                 (append (cdr queue)
-                         (new-paths path node net))  ; Add new paths from the
-                                                     ; current node to the 
-                                                     ; search space
-                 net)))))))
-
-;; Finally we define the new-paths function
+;; First we define the new-paths function.  We add a check to ensure that any
+;; newly added node isn't on the the existing path.
 (defun new-paths (path node net)
   (mapcar #'(lambda (n)
               ;; Add paths, but only if the node isn't currently in the path
               ;; (this is to prevent adding cycles)
-              (if (not (member node n))
+              (if (not (member n path))
                 (cons n path)))
           (cdr (assoc node net))))
 
-;; Now we test
+;; Next we write our modified bfse function.  This method changes the bfs 
+;; algorithm to ensure that it is an exhaustive search.  During the search
+;; it maintains a longest-path variable that keeps track of the currently
+;; longest path for all searched paths.
+(defun bfse (end queue longest-path net)
+  (if (null queue)
+    ;; We're at the end, return the best-path
+    (progn (format t "dink") longest-path)
 
+    ;; Still more to search
+    (let ((path (car queue)))
+      (let ((node (car path)))
+        ;; Have we found a solution?
+        (if (eql node end)
+          ;; Yes
+          (progn
+            ;; Is it better than the current longest-path?  If so, update our
+            ;; longest-path
+            (if (> (length path ) (length longest-path))
+              (progn
+                (setf longest-path (reverse path))
+                (progn (format t "found one! path = ~A lp = ~A" path longest-path) longest-path)))
+            ;; Either way, continue the search
+            (bfse end
+                  (append (cdr queue))  ; Don't need to add new paths from the
+                  ; current node since it is a solution
+                  longest-path
+                  net))
+
+          ;; No, continue the search
+          (bfse end
+                (append (cdr queue)
+                        (new-paths path node net))  ; Add new paths from the
+                ; current node to the 
+                ; search space
+                longest-path
+                net)
+
+          )))))
+
+;; Finally we define a high level function to kick off the search.  Note that
+;; we refer to the modified bfs function 'bfse' to indicate that it is an
+;; exhaustive search
+(defun longest-path (start end net)
+   (bfse end (list (list start)) nil net))
+
+
+;; Now we test
+;; From the text, we have a simple network
+(setf min '((a b c) (b c) (c d)))
+(equal '(a b c d) (longest-path 'a 'd min))
+
+(setf bigger '((a b c e) (b c e) (c d) (d e)))
+(equal '(a b c d e) (longest-path 'a 'e bigger))
