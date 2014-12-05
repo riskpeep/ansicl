@@ -24,3 +24,24 @@
 ;;
 ;;    A             B
 ;;
+;; We can accomplish this rotation by iterating through the source array and
+;; setting the correct value in a destination array.
+;;
+(defun quarter-turn (src)
+  (let* ((dims (array-dimensions src))
+         (dst (make-array (list (cadr dims) (car dims)))))
+
+    (do ((src-x 0 (+ 1 src-x))
+         (dst-y (- (cadr dims) 1) (- 1 dst-y))) 
+        ((= src-x (car dims)) dst)
+
+        (do ((src-y 0 (+ 1 src-y))
+             (dst-x 0 (+ 1 dst-x)))
+          ((= src-y (cadr dims)) dst)
+          (setf (aref dst dst-x dst-y) (aref src src-x src-y))))))
+
+
+;; Test
+(quarter-turn #2A((a b) (c d)))
+;; #2A((C A) (D B))
+
